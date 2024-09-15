@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace MinimalApi.Infraestrutura.Db;
-public class DbContexto 
+public class DbContexto : DbContext
 {
     
 }
