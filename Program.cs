@@ -25,7 +25,7 @@ var app = builder.Build();
 #endregion
 
 #region Home
-app.MapGet("", () => Results.Json(new Home()));
+app.MapGet("/", () => Results.Json(new Home())).WithTags("home");
 #endregion
 
 #region Administradores
@@ -35,7 +35,7 @@ app.MapPost("/administradores/login", ([FromBody] LoginDTO loginDTO, IAdministra
     }
     else 
         return Results.Unauthorized();
-});
+}).WithTags("administradores");
 #endregion
 
 #region Veiculos
@@ -50,6 +50,44 @@ app.MapPost("/veiculos", ([FromBody] VeiculoDTO veiculoDTO, IVeiculoServico veic
     
     return Results.Created($"/veiculo/{veiculo.Id}", veiculo);
 });
+
+app.MapGet("/veiculos", ([FromQuery] int? pagina, IVeiculoServico veiculoServico) => {
+    var veiculos = veiculoServico.Todos(pagina);
+    
+    return Results.Ok(veiculos);
+}).WithTags("veiculos");
+
+app.MapGet("/veiculos/{id}", ([FromRoute] int id, IVeiculoServico veiculoServico) => {
+    var veiculo = veiculoServico.BuscaPorId(id);
+    
+    if(veiculo == null) return Results.NotFound();
+    
+    return Results.Ok(veiculo);
+}).WithTags("veiculos");
+
+app.MapPut("/veiculos/{id}", ([FromRoute] int id, VeiculoDTO veiculoDTO, IVeiculoServico veiculoServico) => {
+    var veiculo = veiculoServico.BuscaPorId(id);
+    
+    if(veiculo == null) return Results.NotFound();
+    
+    veiculo.Nome = veiculoDTO.Nome;
+    veiculo.Marca = veiculoDTO.Marca;
+    veiculo.Ano = veiculoDTO.Ano;
+
+    veiculoServico.Atualizar(veiculo);
+
+    return Results.Ok(veiculo);
+}).WithTags("veiculos");
+
+app.MapDelete("/veiculos/{id}", ([FromRoute] int id, IVeiculoServico veiculoServico) => {
+    var veiculo = veiculoServico.BuscaPorId(id);
+    
+    if(veiculo == null) return Results.NotFound();
+
+    veiculoServico.Apagar(veiculo);
+    
+    return Results.NoContent();
+}).WithTags("veiculos");
 #endregion
 
 #region App
